@@ -11,7 +11,7 @@ public sealed class CEPathFindAgent
 	/// <summary>
 	/// 每次Tick调用时候,搜索Node节点的个数
 	/// </summary>
-	private const int EACH_TICK_SEARCH_NODE_NUM = 1;
+	private const int EACH_TICK_SEARCH_NODE_NUM = 50;
 
 	private CEPathFindBasic mHolder;
 
