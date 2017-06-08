@@ -6,6 +6,40 @@ a path find for tilebase game in unity
 
 ## How to use 
 
+### Extend base engine
+
+before you use `CEPathFind`, you shoud provide an pathfind engine with overrde this class `CEPathFindBasic.cs`
+
+
+```csharp
+
+	//Get an tile property
+	//you can check A start path find wiki for more info about score.
+	override public void GetTileProperty (int _tileX, int _tileY, 
+	                                     CEPathFindNode _star, CEPathFindNode _end, 
+	                                     out bool _isWalkable, out int _score)
+	{
+		_isWalkable = true;
+		_score = 1;
+	}
+
+
+	override public bool isTileWalkable (int _tileX, int _tileY)
+	{
+		return true;
+	}
+
+
+	override public TILE_SERACH_TYPE GetTileSerachType ()
+	{
+		return TILE_SERACH_TYPE.EIGHT_DIRECTION_FIX_CORNER;
+	}
+
+```
+
+
+### Call pathfind
+
 there is two way to use it.
 
 -  Immediate return
@@ -43,4 +77,24 @@ private const int EACH_TICK_SEARCH_NODE_NUM = 50;
 ```
 
 
+---
+## PathFindType
+
+### 4 direction
+![img1](md/img3.jpg)
+
+### 8 direction
+![img1](md/img2.jpg)
+
+### 8 direction with fix corner
+![img1](md/img1.jpg)
+
+
+## Issue
+
+e-mail: iamzealotwang@126.com
+
+
+thanks.  
+Eran
 
