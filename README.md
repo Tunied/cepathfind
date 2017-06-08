@@ -10,8 +10,9 @@ there is two way to use it.
 
 -  Immediate return
 
-```c#
+```csharp
 CEPathFindResult result = CEPathFind.FindPath (starTileX, starTileY, endTileX, endTileY, findEngine);
+
 Debug.Log(result.toString());
 ```
 
@@ -21,7 +22,7 @@ in this way,the function will return the result immediately.
 
 -  Async call back
 
-```
+```csharp
 
 CEPathFind.FindPath (starTileX, starTileY, endTileX, endTileY, findEngine,ShowPath);
 
@@ -29,7 +30,6 @@ private void ShowPath (CEPathFindResult _result)
 {
 	Debug.Log(result.toString());
 }
-
 ```
 
 in this way ,you need provide an callback(`Action<(CEPathFindResult >`),when the path find finish ,it will call back.
