@@ -5,17 +5,19 @@ using System;
 
 public class CEPathFind : MonoBehaviour
 {
-
+	private static  CEPathFindAgent mShareAgent;
 	private static  CEPathFind mInstance;
 
 	public static CEPathFindResult FindPath (int _starTileX, int _starTileY, int _endTileX, int _endTileY, CEPathFindBasic _findEngine)
 	{
-		var agent = new CEPathFindAgent ();
-		agent.Reset (_findEngine, _starTileX, _starTileY, _endTileX, _endTileY);
+		if (mShareAgent == null) {
+			mShareAgent = new CEPathFindAgent ();
+		}
+		mShareAgent.Reset (_findEngine, _starTileX, _starTileY, _endTileX, _endTileY);
 		CEPathFindResult result = null;
 		bool isFinish = false;
 		while (!isFinish) {
-			agent.TickSearch (out isFinish, out result);
+			mShareAgent.TickSearch (out isFinish, out result);
 		}
 		return result;
 	}

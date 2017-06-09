@@ -32,10 +32,6 @@ public sealed class CEPathFindAgent
 	public void Reset (CEPathFindBasic _holder, int _startTileX, int _startTileY, int _endTileX, int _endTileY)
 	{
 		mHolder = _holder;
-		mOpenList.ForEach (node => nodePool.Push (node));
-		mCloseList.ForEach (node => nodePool.Push (node));
-		mOpenList.Clear ();
-		mCloseList.Clear ();
 
 		mStarNode = GetNewNode ();
 		mStarNode.x = _startTileX;
@@ -60,6 +56,7 @@ public sealed class CEPathFindAgent
 			_isFinish = true;
 			_reuslt = new CEPathFindResult ();
 			_reuslt.isHavePath = false;
+			RecyleNodes ();
 			return;
 		}
 
@@ -68,6 +65,7 @@ public sealed class CEPathFindAgent
 			if (mCurrentNode.x == mEndNode.x && mCurrentNode.y == mEndNode.y) {
 				_isFinish = true;
 				_reuslt = GetPathFindResult (mCurrentNode);
+				RecyleNodes ();
 				return;
 			}
 
@@ -80,6 +78,7 @@ public sealed class CEPathFindAgent
 				_isFinish = true;
 				_reuslt = new CEPathFindResult ();
 				_reuslt.isHavePath = false;
+				RecyleNodes ();
 				return;
 			}
 
@@ -223,5 +222,14 @@ public sealed class CEPathFindAgent
 	}
 
 	#endregion
+
+
+	private void RecyleNodes ()
+	{
+		mOpenList.ForEach (node => nodePool.Push (node));
+		mCloseList.ForEach (node => nodePool.Push (node));
+		mOpenList.Clear ();
+		mCloseList.Clear ();
+	}
 
 }
