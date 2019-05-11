@@ -1,82 +1,111 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
+using Eran.CopyEngine.Extension.PathFind.Sub;
 using UnityEngine;
-using System;
 
-public class CEPathFind : MonoBehaviour
+namespace Eran.CopyEngine.Extension.PathFind
 {
-	private static  CEPathFindAgent mShareAgent;
-	private static  CEPathFind mInstance;
+    public class CEPathFind : MonoBehaviour
+    {
+        private const int MAX_SEARCH_TIME = 100;
+        private static CEPathFindAgent mShareAgent;
+        private static CEPathFind mInstance;
+        private static GameObject mHoldGo;
 
-	public static CEPathFindResult FindPath (int _starTileX, int _starTileY, int _endTileX, int _endTileY, CEPathFindBasic _findEngine)
-	{
-		if (mShareAgent == null) {
-			mShareAgent = new CEPathFindAgent ();
-		}
-		mShareAgent.Reset (_findEngine, _starTileX, _starTileY, _endTileX, _endTileY);
-		CEPathFindResult result = null;
-		bool isFinish = false;
-		while (!isFinish) {
-			mShareAgent.TickSearch (out isFinish, out result);
-		}
-		return result;
-	}
+        /// <summary>
+        /// 一次性返回搜索结果,用于小图搜索
+        /// </summary>
+        public static CEPathFindResult FindPath(int _starTileX, int _starTileY, int _endTileX, int _endTileY, CEPathFindMapAgent _findEngine)
+        {
+            if (mShareAgent == null)
+            {
+                mShareAgent = new CEPathFindAgent();
+            }
 
-	public static void FindPath (int _starTileX, int _starTileY,
-	                             int _endTileX, int _endTileY, 
-	                             CEPathFindBasic _findEngine,
-	                             Action<CEPathFindResult> _finishCallback)
-	{
-		if (mInstance == null) {
-			Debug.LogError ("you should attack CEPathFind to an gameobject and call FindPath after it have been init");
-		} else {
-			var agentProxy = new CEPathFindAgentProxy ();
-			agentProxy.agent = new CEPathFindAgent ();
-			agentProxy.agent.Reset (_findEngine, _starTileX, _starTileY, _endTileX, _endTileY);
-			agentProxy.callback += _finishCallback;
+            mShareAgent.Reset(_findEngine, _starTileX, _starTileY, _endTileX, _endTileY);
+            CEPathFindResult result = null;
+            var isFinish = false;
+            var searchTime = 0;
+            while (!isFinish)
+            {
+                mShareAgent.TickSearch(out isFinish, out result);
+                searchTime++;
+                if (searchTime >= MAX_SEARCH_TIME && !isFinish)
+                {
+                    isFinish = true;
+                    result = new CEPathFindResult {isHavePath = false};
+                    Debug.LogError("Reach CEPathFind max loop");
+                    mShareAgent.DebugOutput();
+                }
+            }
 
-			mInstance.AddAgentProxy (agentProxy);
-		}
-	}
+            return result;
+        }
+
+        /// <summary>
+        /// 异步搜索,需要等待回调
+        /// </summary>
+        public static void FindPathAsync(int _starTileX, int _starTileY,
+            int _endTileX, int _endTileY,
+            CEPathFindMapAgent _findEngine,
+            Action<CEPathFindResult> _finishCallback)
+        {
+            if (mInstance == null)
+            {
+                mHoldGo = new GameObject("CEPathFind");
+                DontDestroyOnLoad(mHoldGo);
+                mInstance = mHoldGo.AddComponent<CEPathFind>();
+            }
+
+            var agentProxy = new CEPathFindAgentProxy {agent = new CEPathFindAgent()};
+            agentProxy.agent.Reset(_findEngine, _starTileX, _starTileY, _endTileX, _endTileY);
+            agentProxy.callback = _finishCallback;
+
+            mInstance.AddAgentProxy(agentProxy);
+        }
 
 
-	private List<CEPathFindAgentProxy> mAllAgentProxyList;
+        private readonly List<CEPathFindAgentProxy> mAllAgentProxyList = new List<CEPathFindAgentProxy>();
 
-	void Awake ()
-	{
-		mAllAgentProxyList = new List<CEPathFindAgentProxy> ();
-		mInstance = this;
-	}
+        // Update is called once per frame
+        private void Update()
+        {
+            if (mAllAgentProxyList.Count <= 0) return;
 
-	// Update is called once per frame
-	void Update ()
-	{
-		if (mAllAgentProxyList.Count > 0) {
-			
-			mAllAgentProxyList.ForEach (proxy => {
-				bool isFinish;
-				CEPathFindResult result = null;
-				proxy.agent.TickSearch (out isFinish, out result);
-				if (isFinish) {
-					proxy.callback (result);
-					proxy.isFinish = true;
-				}
-			});
+            mAllAgentProxyList.ForEach(proxy =>
+            {
+                bool isFinish;
+                CEPathFindResult result;
+                proxy.agent.TickSearch(out isFinish, out result);
+                proxy.searchTime++;
 
-			mAllAgentProxyList.RemoveAll (proxy => proxy.isFinish == true);
-		}
-	}
+                if (!isFinish && proxy.searchTime >= MAX_SEARCH_TIME)
+                {
+                    isFinish = true;
+                    result = new CEPathFindResult {isHavePath = false};
+                    Debug.LogError("Reach CEPathFind max loop");
+                    mShareAgent.DebugOutput();
+                }
 
-	private void AddAgentProxy (CEPathFindAgentProxy _proxy)
-	{
-		mAllAgentProxyList.Add (_proxy);		
-	}
+                if (!isFinish) return;
+                proxy.callback(result);
+                proxy.isFinish = true;
+            });
 
-	private class CEPathFindAgentProxy
-	{
-		public bool isFinish;
-		public CEPathFindAgent agent;
-		public Action<CEPathFindResult> callback;
-	}
+            mAllAgentProxyList.RemoveAll(proxy => proxy.isFinish);
+        }
 
+        private void AddAgentProxy(CEPathFindAgentProxy _proxy)
+        {
+            mAllAgentProxyList.Add(_proxy);
+        }
+
+        private class CEPathFindAgentProxy
+        {
+            public bool isFinish;
+            public CEPathFindAgent agent;
+            public Action<CEPathFindResult> callback;
+            public int searchTime;
+        }
+    }
 }

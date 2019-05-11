@@ -3,12 +3,21 @@ a path find for tilebase game in unity
 
 ![img1](md/img4.jpg)
 
+## Update
+
+12.05.2019
+
+- change open list to `PriorityQueue` to gain some performance.
+- add max loop limiting in case path find run too long. @see more at CEPathFind.MAX_SEARCH_TIME
+- replace CEVector2Int with unity build in Vector2Int
+- rename some class for clearly the purpose.
+- fix some spelling mistake 
 
 ## How to use 
 
 ### Extend base engine
 
-before you use `CEPathFind`, you shoud provide an pathfind engine with overrde this class `CEPathFindBasic.cs`
+before you use `CEPathFind`, you shoud provide an pathfind engine with overrde this class `CEPathFindMapAgent.cs`
 
 
 ```csharp
@@ -58,7 +67,7 @@ in this way,the function will return the result immediately.
 
 ```csharp
 
-CEPathFind.FindPath (starTileX, starTileY, endTileX, endTileY, findEngine,ShowPath);
+CEPathFind.FindPathAsync (starTileX, starTileY, endTileX, endTileY, findEngine,ShowPath);
 
 private void ShowPath (CEPathFindResult _result)
 {
@@ -68,7 +77,7 @@ private void ShowPath (CEPathFindResult _result)
 
 in this way ,you need provide an callback(`Action<(CEPathFindResult >`),when the path find finish ,it will call back.
 
-***Attaction***: if you use this way, you should attach CEPathFind.cs to an gameObject.
+~~***Attaction***: if you use this way, you should attach CEPathFind.cs to an gameObject.~~
 
 also you can change the each tick search node num in `CEPathFindAgent.cs`
 
